@@ -5,7 +5,8 @@ const campGroundSchema=new Schema({
     title:String,
     price:String,
     description:String,
-    location:String
+    location:String,
+    population:String
 });
 
 module.exports=mongoose.model('Campground', campGroundSchema)
