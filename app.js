@@ -52,7 +52,7 @@ app.post('/campgrounds', async(req,res)=>{
 
 app.get('/campgrounds/:id/edit', async (req, res)=>{
     const campground=await Campground.findById(req.params.id)
-    res.render('views/campgrounds/edit', {campground})
+    res.render('campgrounds/edit', {campground})
 })
 
 
