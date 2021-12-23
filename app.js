@@ -1,10 +1,11 @@
 const express=require('express');
 const app=express();
 const path=require('path');
-const Campground=require('./models/campground')
-const methodOverride=require('method-override')
-
 const mongoose=require('mongoose');
+const ejsMate=require('ejs-mate');
+const methodOverride=require('method-override')
+const Campground=require('./models/campground')
+
 mongoose.connect('mongodb://localhost:27017/YelpCampDB', {useNewUrlParser:true, useUnifiedTopology:true})
 .then(()=>{
     console.log("-----MONGOOSE CONNECTION OPEN-----")
@@ -16,7 +17,7 @@ mongoose.connect('mongodb://localhost:27017/YelpCampDB', {useNewUrlParser:true, 
 const db=mongoose.connection;       // JUST DOING IT FOR SHORTCUT, SO I CAN JUST USE db INSTEAD OF mongoose.connection EVERYTIME I WORK WITH ITS DATABASE
 
 
-
+app.engine('ejs', ejsMate)
 app.set('view engine', 'ejs');      // ejs WILL BE RESPONSIBLE FOR LOOKING INTO THE 'views' folder for templates to render
 app.set('views', path.join(__dirname, 'views'))   // JOINING PATH WITH VIEWS DIRECTORY
 
@@ -51,7 +52,7 @@ app.post('/campgrounds', async(req,res)=>{
 
 app.get('/campgrounds/:id/edit', async (req, res)=>{
     const campground=await Campground.findById(req.params.id)
-    res.render('/campgrounds/edit', {campground})
+    res.render('views/campgrounds/edit', {campground})
 })
 
 
@@ -75,7 +76,6 @@ app.delete('/campgrounds/:id', async (req,res)=>{
 //     await camp.save();
 //     res.send(camp)
 // })
-
 
 
 app.listen(3000, ()=>{
