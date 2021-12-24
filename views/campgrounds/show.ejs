@@ -1,14 +1,30 @@
 <% layout('/layouts/boilerPlate')%>
-    <h2><%= campground.title%></h2>
-    <ul><h3><%= campground.location%></h3></ul>
-    <img src="<%=campground.image%>" alt="" height="550px" width="1300px" >
-    <br>
-    <p><a href="/campground/<%= campground._id%>/edit">Edit</a></p>
-    <p>
-        <form action="/campgrounds/<%=campground._id%>?_method=DELETE" method="POST">
-            <button>Delete</button>
-        </form>
-    </p>
-    <footer>
+
+<div class="row">
+    <div class="col-6 offset-3">
+        <div class="card mb-5">
+            <img src="<%=campground.image%>" class="card-img-top" alt="...">
+            <div class="card-body">
+              <h4 class="card-title" ><%= campground.title%></h4>
+              <p class="card-text"><%=campground.description%></p>
+            </div>
+            <ul class="list-group list-group-flush">
+              <i><b><li class="list-group-item"  ><%=campground.location%></li></b></i>
+              <b><li class="list-group-item" ><%=campground.price%></li></b>
+            </ul>
+            <div class="card-body">
+              <a style="margin-left: 240px;" href="/campground/<%= campground._id%>/edit" class="card-link btn btn-info">Edit</a>
+              <form class="d-inline" action="/campgrounds/<%=campground._id%>?_method=DELETE" method="POST">
+                <button style="margin-left: 10px;" class="btn btn-danger">Delete</button>
+            </form>
+            </div>
+            <div class="card-footer text-muted">
+                Posted few days ago
+            </div>
+          </div>
+    </div>
+</div>
+
+    <!-- <footer>
         <a href="/campgrounds">All Campgrounds</a>
-    </footer>
+    </footer> -->
