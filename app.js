@@ -3,6 +3,7 @@ const app=express();
 const path=require('path');
 const mongoose=require('mongoose');
 const ejsMate=require('ejs-mate');
+const catchAsync=require('./errorHandlers/catchAsync');
 const methodOverride=require('method-override')
 const Campground=require('./models/campground')
 
@@ -28,32 +29,32 @@ app.get('/', (req, res)=>{
     res.render('home')
 })
 
-app.get('/campgrounds', async (req, res)=>{
+app.get('/campgrounds', catchAsync( async (req, res)=>{
     const campgrounds=await Campground.find({})
     // res.send(camp);
     res.render('campgrounds/index', {campgrounds})
-})
+}))
 
 app.get('/campgrounds/new', (req,res)=>{        // THIS .get SECTION MUST BE ABOVE FROM THE SECTION WITH .get campgrounds/:id BECAUSE OTHERWISE IT CANT FIND ANYTHING WITH THE NEW ID
     res.render('campgrounds/new')
 })
 
-app.get('/campgrounds/:id', async (req,res)=>{
+app.get('/campgrounds/:id', catchAsync( async (req,res)=>{
     const campground=await Campground.findById(req.params.id)
     res.render('campgrounds/show', {campground})
-})
+}))
 
-app.post('/campgrounds', async(req,res)=>{
+app.post('/campgrounds', catchAsync( async(req, res, next)=>{
     const campground=new Campground(req.body.campground)
     await campground.save();
     // res.send(req.body)
     res.redirect(`/campgrounds/${campground._id}`)
-})
+}))
 
-app.get('/campgrounds/:id/edit', async (req, res)=>{
+app.get('/campgrounds/:id/edit', catchAsync( async (req, res)=>{
     const campground=await Campground.findById(req.params.id)
     res.render('campgrounds/edit', {campground})
-})
+}))
 
 
 app.put('/campgrounds/:id', async (req,res)=>{
@@ -63,12 +64,16 @@ app.put('/campgrounds/:id', async (req,res)=>{
 })
 
 
-app.delete('/campgrounds/:id', async (req,res)=>{
+app.delete('/campgrounds/:id', catchAsync( async (req,res)=>{
     const{id}=req.params;
     await Campground.findByIdAndDelete(id);
     res.redirect('/campgrounds');
-})
+}))
 
+
+app.use((err, req, res,next)=>{
+    res.send('Something went wrong')
+})
 
 
 // app.get('/makeCG', async (req,res)=>{

@@ -31,7 +31,7 @@ const campDataDB = async()=>{
             location:`${cities[rand1000].city}, ${cities[rand1000].state}`,
             title:`${sample(descriptors)} ${sample(places)}`,
             image:'https://source.unsplash.com/collection/483251',
-            price:`${price} Thousands per day`,
+            price:`${price}`,
             description:'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nisi quos tempore earum qui similique sequi sunt odit, dolorem, provident labore reprehenderit maiores repudiandae aut esse doloribus asperiores accusantium sit? Quia.'
         })
         await camp.save();
@@ -39,4 +39,5 @@ const campDataDB = async()=>{
 }
 campDataDB().then(()=>{
     mongoose.connection.close()
+    console.log("Mongoose connection closed")
 })
