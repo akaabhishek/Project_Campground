@@ -4,8 +4,9 @@ const path=require('path');
 const mongoose=require('mongoose');
 const ejsMate=require('ejs-mate');
 const catchAsync=require('./errorHandlers/catchAsync');
+const ExpressError = require('./errorHandlers/ExpressError');
 const methodOverride=require('method-override')
-const Campground=require('./models/campground')
+const Campground=require('./models/campground');
 
 mongoose.connect('mongodb://localhost:27017/YelpCampDB', {useNewUrlParser:true, useUnifiedTopology:true})
 .then(()=>{
@@ -39,19 +40,21 @@ app.get('/campgrounds/new', (req,res)=>{        // THIS .get SECTION MUST BE ABO
     res.render('campgrounds/new')
 })
 
-app.get('/campgrounds/:id', catchAsync( async (req,res)=>{
-    const campground=await Campground.findById(req.params.id)
-    res.render('campgrounds/show', {campground})
-}))
+
 
 app.post('/campgrounds', catchAsync( async(req, res, next)=>{
+    if(!req.body.campground) throw new ExpressError('Invalid campground data', 400)
     const campground=new Campground(req.body.campground)
     await campground.save();
     // res.send(req.body)
     res.redirect(`/campgrounds/${campground._id}`)
 }))
+app.get('/campgrounds/:id', catchAsync( async (req,res)=>{
+    const campground=await Campground.findById(req.params.id)
+    res.render('campgrounds/show', {campground})
+}))
 
-app.get('/campgrounds/:id/edit', catchAsync( async (req, res)=>{
+app.get('/campground/:id/edit', catchAsync( async (req, res)=>{
     const campground=await Campground.findById(req.params.id)
     res.render('campgrounds/edit', {campground})
 }))
@@ -70,9 +73,18 @@ app.delete('/campgrounds/:id', catchAsync( async (req,res)=>{
     res.redirect('/campgrounds');
 }))
 
+app.all('*', (req, res, next)=>{            // THIS IS TO CHECK IF THE URL IS CORRECT OR NOT FOR ALL API REQUESTS
+    next(new ExpressError('Page not found', 404))
+})
+
 
 app.use((err, req, res,next)=>{
-    res.send('Something went wrong')
+    const{statusCode=500}=err;
+    if(!err.message){
+        err.message="Oops! Something went wrong"
+    }
+    res.status(statusCode).render('errorTemplate.ejs', {err});
+    // res.send('Something went wrong')
 })
 
 
