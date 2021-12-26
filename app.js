@@ -3,10 +3,13 @@ const app=express();
 const path=require('path');
 const mongoose=require('mongoose');
 const ejsMate=require('ejs-mate');
+const joi=require('joi')        // JS VALIDATOR TOOL......... used to validate .body errors with ease
+const {campgroundSchema}=require('./validateSchema.js')
 const catchAsync=require('./errorHandlers/catchAsync');
 const ExpressError = require('./errorHandlers/ExpressError');
 const methodOverride=require('method-override')
 const Campground=require('./models/campground');
+const { string } = require('joi');
 
 mongoose.connect('mongodb://localhost:27017/YelpCampDB', {useNewUrlParser:true, useUnifiedTopology:true})
 .then(()=>{
@@ -26,6 +29,16 @@ app.set('views', path.join(__dirname, 'views'))   // JOINING PATH WITH VIEWS DIR
 app.use(express.urlencoded({extended:true}))    // THIS LINE IS USED FOR PARSING THE POST REQUEST BODY OTHERWISE THE POST REQUEST BODY WILL BE BLANK
 app.use(methodOverride('_method'))
 
+const validateCampgrounds=(req, res, next)=>{
+    const {error}=campgroundSchema.validate(req.body);
+    if(error){
+        const msg=error.details.map(element=>element.message).join(',')     // ',' is used if in case there will be more than one message........we will join them with ,
+        throw new ExpressError(msg, 400)
+    }else{
+        next();
+    }
+}
+
 app.get('/', (req, res)=>{
     res.render('home')
 })
@@ -42,8 +55,9 @@ app.get('/campgrounds/new', (req,res)=>{        // THIS .get SECTION MUST BE ABO
 
 
 
-app.post('/campgrounds', catchAsync( async(req, res, next)=>{
-    if(!req.body.campground) throw new ExpressError('Invalid campground data', 400)
+app.post('/campgrounds',validateCampgrounds, catchAsync( async(req, res, next)=>{
+    // if(!req.body.campground) throw new ExpressError('Invalid campground data', 400)
+    
     const campground=new Campground(req.body.campground)
     await campground.save();
     // res.send(req.body)
@@ -60,7 +74,7 @@ app.get('/campground/:id/edit', catchAsync( async (req, res)=>{
 }))
 
 
-app.put('/campgrounds/:id', async (req,res)=>{
+app.put('/campgrounds/:id',validateCampgrounds, async (req,res)=>{
     const {id}=req.params;
     const campground=await Campground.findByIdAndUpdate(id,{...req.body.campground});
     res.redirect(`/campground/${campground._id}`)
