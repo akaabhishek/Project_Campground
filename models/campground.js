@@ -18,7 +18,7 @@ const campGroundSchema=new Schema({
 });
 
 
-campgroundSchema.post('findOneAndDelete', async function (doc){
+campGroundSchema.post('findOneAndDelete', async function (doc){
     if(doc){
         await Review.deleteMany({
             _id:{                                                       // This is a query middleware and i used it here so that it can delete all the reviews related to a campground from the database when a campground is deleted

@@ -12,7 +12,13 @@ const Campground=require('./models/campground');
 const { string } = require('joi');
 const Review=require('./models/review');
 
-mongoose.connect('mongodb://localhost:27017/YelpCampDB', {useNewUrlParser:true, useUnifiedTopology:true})
+const campgrounds=require('./routes/campgrounds')
+
+mongoose.connect('mongodb://localhost:27017/YelpCampDB', {
+    useNewUrlParser:true, 
+    useUnifiedTopology:true, 
+    useCreateIndex: true, 
+    useFindAndModify: true})
 .then(()=>{
     console.log("-----MONGOOSE CONNECTION OPEN-----")
 })
@@ -29,6 +35,7 @@ app.set('views', path.join(__dirname, 'views'))   // JOINING PATH WITH VIEWS DIR
 
 app.use(express.urlencoded({extended:true}))    // THIS LINE IS USED FOR PARSING THE POST REQUEST BODY OTHERWISE THE POST REQUEST BODY WILL BE BLANK
 app.use(methodOverride('_method'))
+app.use(express.static(path.join(__dirname, 'public')))
 
 const validateCampgrounds=(req, res, next)=>{
     const {error}=campgroundSchema.validate(req.body);
@@ -55,49 +62,18 @@ app.get('/', (req, res)=>{
     res.render('home')
 })
 
-app.get('/campgrounds', catchAsync( async (req, res)=>{
-    const campgrounds=await Campground.find({})
-    // res.send(camp);
-    res.render('campgrounds/index', {campgrounds})
-}))
-
-app.get('/campgrounds/new', (req,res)=>{        // THIS .get SECTION MUST BE ABOVE FROM THE SECTION WITH .get campgrounds/:id BECAUSE OTHERWISE IT CANT FIND ANYTHING WITH THE NEW ID
-    res.render('campgrounds/new')
-})
-
-
-
-app.post('/campgrounds',validateCampgrounds, catchAsync( async(req, res, next)=>{
-    // if(!req.body.campground) throw new ExpressError('Invalid campground data', 400)
-    
-    const campground=new Campground(req.body.campground)
-    await campground.save();
-    // res.send(req.body)
-    res.redirect(`/campgrounds/${campground._id}`)
-}))
-app.get('/campgrounds/:id', catchAsync( async (req,res)=>{
-    const campground=await Campground.findById(req.params.id).populate('reviews')
-    res.render('campgrounds/show', {campground})
-}))
+app.use('/campgrounds', campgrounds)
 
 app.get('/campground/:id/edit', catchAsync( async (req, res)=>{
     const campground=await Campground.findById(req.params.id)
     res.render('campgrounds/edit', {campground})
 }))
 
-
 app.put('/campgrounds/:id',validateCampgrounds, async (req,res)=>{
     const {id}=req.params;
     const campground=await Campground.findByIdAndUpdate(id,{...req.body.campground});
     res.redirect(`/campground/${campground._id}`)
 })
-
-
-app.delete('/campgrounds/:id', catchAsync( async (req,res)=>{
-    const{id}=req.params;
-    await Campground.findByIdAndDelete(id);
-    res.redirect('/campgrounds');
-}))
 
 app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async (req, res)=>{
     // res.send('Thanks for leaving a review');
