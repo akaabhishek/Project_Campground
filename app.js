@@ -11,14 +11,16 @@ const methodOverride=require('method-override')
 const Campground=require('./models/campground');
 const { string } = require('joi');
 const Review=require('./models/review');
-
+const session=require('express-session')
+const flash=require('connect-flash')
 const campgrounds=require('./routes/campgrounds')
 
 mongoose.connect('mongodb://localhost:27017/YelpCampDB', {
     useNewUrlParser:true, 
     useUnifiedTopology:true, 
-    useCreateIndex: true, 
-    useFindAndModify: true})
+    // useCreateIndex: true,        // THIS IS NOT SUPPORTED IN MONGOOSE NOW
+    // useFindAndModify: true       // THIS IS ALSO NOT SUPPORTED IN MONGOOSE NOW
+})
 .then(()=>{
     console.log("-----MONGOOSE CONNECTION OPEN-----")
 })
@@ -36,6 +38,25 @@ app.set('views', path.join(__dirname, 'views'))   // JOINING PATH WITH VIEWS DIR
 app.use(express.urlencoded({extended:true}))    // THIS LINE IS USED FOR PARSING THE POST REQUEST BODY OTHERWISE THE POST REQUEST BODY WILL BE BLANK
 app.use(methodOverride('_method'))
 app.use(express.static(path.join(__dirname, 'public')))
+
+const sessionConfig={
+    secret:'itShouldBeASecret',
+    resave:false,       // USED FOR SESSION DEPRICATED WARNINGS
+    saveUninitialized:true,      // USED FOR SESSION DEPRICATED WARNINGS
+    cookie:{
+        httpOnly:true,      // IF the httpOnly FLAG IS INCLUDED THE COOKIE CANNOT BE ACCESSED THROUGH CLIENT SIDE SCRIPT.
+        expires:Date.now() + (1000*60*60*24*7),         // THIS MEANS COOKIE WILL EXPIRE AFTER A WEEK
+        maxAge:(1000*60*60*24*7)
+    }
+}
+app.use(session(sessionConfig))
+app.use(flash())
+
+app.use((req, res, next)=>{
+    res.locals.success=req.flash('success')
+    res.locals.error=req.flash('error')
+    next()
+})
 
 const validateCampgrounds=(req, res, next)=>{
     const {error}=campgroundSchema.validate(req.body);
@@ -66,12 +87,17 @@ app.use('/campgrounds', campgrounds)
 
 app.get('/campground/:id/edit', catchAsync( async (req, res)=>{
     const campground=await Campground.findById(req.params.id)
+    if(!campground){
+        req.flash('error', `Cannot find what you're looking for`)
+        return res.redirect('/campgrounds')
+    }
     res.render('campgrounds/edit', {campground})
 }))
 
 app.put('/campgrounds/:id',validateCampgrounds, async (req,res)=>{
     const {id}=req.params;
     const campground=await Campground.findByIdAndUpdate(id,{...req.body.campground});
+    req.flash('success', 'SUCCESSFULLY Updated')
     res.redirect(`/campground/${campground._id}`)
 })
 
@@ -82,6 +108,7 @@ app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async (req, res)
     campground.reviews.push(review)
     await review.save()
     await campground.save()
+    req.flash('success', 'Added your review, thanks !')
     res.redirect(`/campgrounds/${campground._id}`)
 }))
 
@@ -89,6 +116,7 @@ app.delete('/campgrounds/:id/reviews/:reviewId', catchAsync(async(req, res)=>{
     const { id, reviewId }=req.params;
     await Campground.findByIdAndUpdate(id, {$pull:{reviews : reviewId}})
     await Review.findByIdAndDelete(reviewId);
+    req.flash('success', 'Review Deleted ')
     res.redirect(`/campgrounds/${id}`)
 }))
 
