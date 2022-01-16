@@ -13,7 +13,14 @@ const { string } = require('joi');
 const Review=require('./models/review');
 const session=require('express-session')
 const flash=require('connect-flash')
-const campgrounds=require('./routes/campgrounds')
+const campgroundsRoutes=require('./routes/campgrounds')
+const userRoutes=require('./routes/users')
+const passport=require('passport');
+const req = require('express/lib/request');
+const LocalStrategy=require('passport-local')
+const User=require('./models/user')
+const {isLoggedIn}=require('./midddleware')
+
 
 mongoose.connect('mongodb://localhost:27017/YelpCampDB', {
     useNewUrlParser:true, 
@@ -52,7 +59,14 @@ const sessionConfig={
 app.use(session(sessionConfig))
 app.use(flash())
 
+app.use(passport.initialize())
+app.use(passport.session())
+passport.use(new LocalStrategy(User.authenticate()))
+passport.serializeUser(User.serializeUser())            // USED TO HOW WE STORE A USER IN THE SESSION
+passport.deserializeUser(User.deserializeUser())        // USED TO HOW WE LOGOUT A USER FROM THE SESSION
+
 app.use((req, res, next)=>{
+    res.locals.currentUser=req.user
     res.locals.success=req.flash('success')
     res.locals.error=req.flash('error')
     next()
@@ -83,9 +97,10 @@ app.get('/', (req, res)=>{
     res.render('home')
 })
 
-app.use('/campgrounds', campgrounds)
+app.use('/', userRoutes)
+app.use('/campgrounds', campgroundsRoutes)
 
-app.get('/campground/:id/edit', catchAsync( async (req, res)=>{
+app.get('/campground/:id/edit',isLoggedIn, catchAsync( async (req, res)=>{
     const campground=await Campground.findById(req.params.id)
     if(!campground){
         req.flash('error', `Cannot find what you're looking for`)
@@ -94,7 +109,7 @@ app.get('/campground/:id/edit', catchAsync( async (req, res)=>{
     res.render('campgrounds/edit', {campground})
 }))
 
-app.put('/campgrounds/:id',validateCampgrounds, async (req,res)=>{
+app.put('/campgrounds/:id',isLoggedIn, validateCampgrounds, async (req,res)=>{
     const {id}=req.params;
     const campground=await Campground.findByIdAndUpdate(id,{...req.body.campground});
     req.flash('success', 'SUCCESSFULLY Updated')
