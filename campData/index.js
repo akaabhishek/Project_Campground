@@ -28,6 +28,7 @@ const campDataDB = async()=>{
         const rand1000=Math.floor(Math.random()*1000);  // SINCE 1000 ENTERIES ARE AVAILABLE IN CITIES.JS
         const price=Math.floor(Math.random()*1000) +10;
         const camp=new Campground({
+            author:'61e42ac1207677573bb24f77',
             location:`${cities[rand1000].city}, ${cities[rand1000].state}`,
             title:`${sample(descriptors)} ${sample(places)}`,
             image:'https://source.unsplash.com/collection/483251',

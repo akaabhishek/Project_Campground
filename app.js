@@ -19,7 +19,8 @@ const passport=require('passport');
 const req = require('express/lib/request');
 const LocalStrategy=require('passport-local')
 const User=require('./models/user')
-const {isLoggedIn}=require('./midddleware')
+const {isLoggedIn, isAuthor, validateCampgrounds, validateReview, isReviewAuthor}=require('./midddleware');
+const { findById } = require('./models/review');
 
 
 mongoose.connect('mongodb://localhost:27017/YelpCampDB', {
@@ -72,25 +73,35 @@ app.use((req, res, next)=>{
     next()
 })
 
-const validateCampgrounds=(req, res, next)=>{
-    const {error}=campgroundSchema.validate(req.body);
-    if(error){
-        const msg=error.details.map(element=>element.message).join(',')     // ',' is used if in case there will be more than one message........we will join them with ,
-        throw new ExpressError(msg, 400)
-    }else{
-        next();
-    }
-}
+// const validateCampgrounds=(req, res, next)=>{
+//     const {error}=campgroundSchema.validate(req.body);
+//     if(error){
+//         const msg=error.details.map(element=>element.message).join(',')     // ',' is used if in case there will be more than one message........we will join them with ,
+//         throw new ExpressError(msg, 400)
+//     }else{
+//         next();
+//     }
+// }
 
-const validateReview=(req, res, next)=>{
-    const {error}=reviewSchema.validate(req.body);
-    if(error){
-        const msg=error.details.map(element=>element.message).join(',')     // ',' is used if in case there will be more than one message........we will join them with ,
-        throw new ExpressError(msg, 400)
-    }else{
-        next();
-    }
-}
+// const isAuthor=async (req, res, next)=>{
+//     const{id}=req.params;
+//     const campground=await Campground.findById(id);
+//     if(!campground.author.equals(req.user._id)){
+//         req.flash('error', `Sorry, you don't have permission to do that`)
+//         return res.redirect(`/campgrounds/${id}`)
+//     }
+//     next();
+// }
+
+// const validateReview=(req, res, next)=>{
+//     const {error}=reviewSchema.validate(req.body);
+//     if(error){
+//         const msg=error.details.map(element=>element.message).join(',')     // ',' is used if in case there will be more than one message........we will join them with ,
+//         throw new ExpressError(msg, 400)
+//     }else{
+//         next();
+//     }
+// }
 
 
 app.get('/', (req, res)=>{
@@ -100,8 +111,9 @@ app.get('/', (req, res)=>{
 app.use('/', userRoutes)
 app.use('/campgrounds', campgroundsRoutes)
 
-app.get('/campground/:id/edit',isLoggedIn, catchAsync( async (req, res)=>{
-    const campground=await Campground.findById(req.params.id)
+app.get('/campground/:id/edit',isLoggedIn, isAuthor, catchAsync( async (req, res)=>{
+    const{id}=req.params;
+    const campground=await Campground.findById(id)
     if(!campground){
         req.flash('error', `Cannot find what you're looking for`)
         return res.redirect('/campgrounds')
@@ -109,17 +121,18 @@ app.get('/campground/:id/edit',isLoggedIn, catchAsync( async (req, res)=>{
     res.render('campgrounds/edit', {campground})
 }))
 
-app.put('/campgrounds/:id',isLoggedIn, validateCampgrounds, async (req,res)=>{
+app.put('/campgrounds/:id',isLoggedIn, isAuthor, validateCampgrounds, async (req,res)=>{
     const {id}=req.params;
     const campground=await Campground.findByIdAndUpdate(id,{...req.body.campground});
     req.flash('success', 'SUCCESSFULLY Updated')
     res.redirect(`/campground/${campground._id}`)
 })
 
-app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async (req, res)=>{
+app.post('/campgrounds/:id/reviews',isLoggedIn, validateReview, catchAsync(async (req, res)=>{
     // res.send('Thanks for leaving a review');
     const campground=await Campground.findById(req.params.id);
     const review=new Review(req.body.review)
+    review.author=req.user._id
     campground.reviews.push(review)
     await review.save()
     await campground.save()
@@ -127,7 +140,7 @@ app.post('/campgrounds/:id/reviews', validateReview, catchAsync(async (req, res)
     res.redirect(`/campgrounds/${campground._id}`)
 }))
 
-app.delete('/campgrounds/:id/reviews/:reviewId', catchAsync(async(req, res)=>{
+app.delete('/campgrounds/:id/reviews/:reviewId',isLoggedIn,isReviewAuthor, catchAsync(async(req, res)=>{
     const { id, reviewId }=req.params;
     await Campground.findByIdAndUpdate(id, {$pull:{reviews : reviewId}})
     await Review.findByIdAndDelete(reviewId);

@@ -17,6 +17,16 @@ const validateCampgrounds=(req, res, next)=>{
     }
 }
 
+const isAuthor=async (req, res, next)=>{
+    const{id}=req.params;
+    const campground=await Campground.findById(id);
+    if(!campground.author.equals(req.user._id)){
+        req.flash('error', `Sorry, you don't have permission to do that`)
+        return res.redirect(`/campgrounds/${id}`)
+    }
+    next();
+}
+
 router.get('/', catchAsync( async (req, res)=>{
     const campgrounds=await Campground.find({})
     // res.send(camp);
@@ -32,13 +42,19 @@ router.post('/', validateCampgrounds, catchAsync( async(req, res, next)=>{
     // if(!req.body.campground) throw new ExpressError('Invalid campground data', 400)
     
     const campground=new Campground(req.body.campground)
+    campground.author=req.user._id;
     await campground.save();
     // res.send(req.body)
     req.flash('success', 'SUCCESSFULLY CREATED A NEW CAMPGROUND')
     res.redirect(`/campgrounds/${campground._id}`)
 }))
 router.get('/:id', catchAsync( async (req,res)=>{
-    const campground=await Campground.findById(req.params.id).populate('reviews')
+    const campground=await Campground.findById(req.params.id).populate({
+        path:'reviews',
+        populate:{
+            path:'author'
+        }
+    }).populate('author')        // populate(), a Mongoose method that you can use to essentially link documents across collections.
     if(!campground){
         req.flash('error', `Cannot find what you're looking for`)
         return res.redirect('/campgrounds')
@@ -58,7 +74,7 @@ router.get('/:id', catchAsync( async (req,res)=>{
 // })
 
 
-router.delete('/:id',isLoggedIn, catchAsync( async (req,res)=>{
+router.delete('/:id',isLoggedIn, isAuthor, catchAsync( async (req,res)=>{
     const{id}=req.params;
     await Campground.findByIdAndDelete(id);
     req.flash('success', 'Successfully deleted Campground')
