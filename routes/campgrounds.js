@@ -1,7 +1,7 @@
 const express=require('express')
-// const app=express();
 const router=express.Router();
 const ExpressError = require('../errorHandlers/ExpressError');
+const campgrounds=require('../controllers/campgrounds')
 const {campgroundSchema}=require('../validateSchema.js')
 const Campground=require('../models/campground');
 const catchAsync=require('../errorHandlers/catchAsync');
@@ -27,40 +27,13 @@ const isAuthor=async (req, res, next)=>{
     next();
 }
 
-router.get('/', catchAsync( async (req, res)=>{
-    const campgrounds=await Campground.find({})
-    // res.send(camp);
-    res.render('campgrounds/index', {campgrounds})
-}))
+router.get('/', catchAsync(campgrounds.index))
 
-router.get('/new', isLoggedIn, (req,res)=>{        // THIS .get SECTION MUST BE ABOVE FROM THE SECTION WITH .get campgrounds/:id BECAUSE OTHERWISE IT CANT FIND ANYTHING WITH THE NEW ID
-    
-    res.render('campgrounds/new')
-})
+router.get('/new', isLoggedIn, campgrounds.renderNewForm)           // THIS .get SECTION MUST BE ABOVE FROM THE SECTION WITH .get campgrounds/:id BECAUSE OTHERWISE IT CANT FIND ANYTHING WITH THE NEW ID
 
-router.post('/', validateCampgrounds, catchAsync( async(req, res, next)=>{
-    // if(!req.body.campground) throw new ExpressError('Invalid campground data', 400)
-    
-    const campground=new Campground(req.body.campground)
-    campground.author=req.user._id;
-    await campground.save();
-    // res.send(req.body)
-    req.flash('success', 'SUCCESSFULLY CREATED A NEW CAMPGROUND')
-    res.redirect(`/campgrounds/${campground._id}`)
-}))
-router.get('/:id', catchAsync( async (req,res)=>{
-    const campground=await Campground.findById(req.params.id).populate({
-        path:'reviews',
-        populate:{
-            path:'author'
-        }
-    }).populate('author')        // populate(), a Mongoose method that you can use to essentially link documents across collections.
-    if(!campground){
-        req.flash('error', `Cannot find what you're looking for`)
-        return res.redirect('/campgrounds')
-    }
-    res.render('campgrounds/show', {campground})
-}))
+router.post('/', validateCampgrounds, catchAsync(campgrounds.createCampground))
+
+router.get('/:id', catchAsync(campgrounds.showCampground))
 
 // app.get('/campground/:id/edit', catchAsync( async (req, res)=>{
 //     const campground=await Campground.findById(req.params.id)
@@ -74,12 +47,7 @@ router.get('/:id', catchAsync( async (req,res)=>{
 // })
 
 
-router.delete('/:id',isLoggedIn, isAuthor, catchAsync( async (req,res)=>{
-    const{id}=req.params;
-    await Campground.findByIdAndDelete(id);
-    req.flash('success', 'Successfully deleted Campground')
-    res.redirect('/campgrounds');
-}))
+router.delete('/:id',isLoggedIn, isAuthor, catchAsync(campgrounds.deleteCampground))
 
 
 

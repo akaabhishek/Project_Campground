@@ -1,7 +1,7 @@
 const {campgroundSchema, reviewSchema}=require('./validateSchema.js')
 const ExpressError=require('./errorHandlers/ExpressError')
 const Campground=require('./models/campground');
-
+const Review=require('./models/review')
 
 module.exports.isLoggedIn=(req, res, next)=>{
     if(!req.isAuthenticated()){

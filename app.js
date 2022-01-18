@@ -21,6 +21,8 @@ const LocalStrategy=require('passport-local')
 const User=require('./models/user')
 const {isLoggedIn, isAuthor, validateCampgrounds, validateReview, isReviewAuthor}=require('./midddleware');
 const { findById } = require('./models/review');
+const controllerCampgrounds=require('./controllers/campgrounds');
+const controllerReviews=require('./controllers/reviews')
 
 
 mongoose.connect('mongodb://localhost:27017/YelpCampDB', {
@@ -111,42 +113,13 @@ app.get('/', (req, res)=>{
 app.use('/', userRoutes)
 app.use('/campgrounds', campgroundsRoutes)
 
-app.get('/campground/:id/edit',isLoggedIn, isAuthor, catchAsync( async (req, res)=>{
-    const{id}=req.params;
-    const campground=await Campground.findById(id)
-    if(!campground){
-        req.flash('error', `Cannot find what you're looking for`)
-        return res.redirect('/campgrounds')
-    }
-    res.render('campgrounds/edit', {campground})
-}))
+app.get('/campground/:id/edit',isLoggedIn, isAuthor, catchAsync(controllerCampgrounds.editCampground))
 
-app.put('/campgrounds/:id',isLoggedIn, isAuthor, validateCampgrounds, async (req,res)=>{
-    const {id}=req.params;
-    const campground=await Campground.findByIdAndUpdate(id,{...req.body.campground});
-    req.flash('success', 'SUCCESSFULLY Updated')
-    res.redirect(`/campground/${campground._id}`)
-})
+app.put('/campgrounds/:id',isLoggedIn, isAuthor, validateCampgrounds, controllerCampgrounds.updateCampground)
 
-app.post('/campgrounds/:id/reviews',isLoggedIn, validateReview, catchAsync(async (req, res)=>{
-    // res.send('Thanks for leaving a review');
-    const campground=await Campground.findById(req.params.id);
-    const review=new Review(req.body.review)
-    review.author=req.user._id
-    campground.reviews.push(review)
-    await review.save()
-    await campground.save()
-    req.flash('success', 'Added your review, thanks !')
-    res.redirect(`/campgrounds/${campground._id}`)
-}))
+app.post('/campgrounds/:id/reviews',isLoggedIn, validateReview, catchAsync(controllerReviews.createReview))
 
-app.delete('/campgrounds/:id/reviews/:reviewId',isLoggedIn,isReviewAuthor, catchAsync(async(req, res)=>{
-    const { id, reviewId }=req.params;
-    await Campground.findByIdAndUpdate(id, {$pull:{reviews : reviewId}})
-    await Review.findByIdAndDelete(reviewId);
-    req.flash('success', 'Review Deleted ')
-    res.redirect(`/campgrounds/${id}`)
-}))
+app.delete('/campgrounds/:id/reviews/:reviewId',isLoggedIn,isReviewAuthor, catchAsync(controllerReviews.deleteReview))
 
 app.all('*', (req, res, next)=>{            // THIS IS TO CHECK IF THE URL IS CORRECT OR NOT FOR ALL API REQUESTS
     next(new ExpressError('Page not found', 404))
