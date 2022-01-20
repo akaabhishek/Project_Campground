@@ -31,9 +31,18 @@ const campDataDB = async()=>{
             author:'61e42ac1207677573bb24f77',
             location:`${cities[rand1000].city}, ${cities[rand1000].state}`,
             title:`${sample(descriptors)} ${sample(places)}`,
-            image:'https://source.unsplash.com/collection/483251',
             price:`${price}`,
-            description:'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nisi quos tempore earum qui similique sequi sunt odit, dolorem, provident labore reprehenderit maiores repudiandae aut esse doloribus asperiores accusantium sit? Quia.'
+            description:'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nisi quos tempore earum qui similique sequi sunt odit, dolorem, provident labore reprehenderit maiores repudiandae aut esse doloribus asperiores accusantium sit? Quia.',
+            images:[
+                { 
+                    url : "https://res.cloudinary.com/uch1ha/image/upload/v1642622590/YelpCamp/zziba7yslezzsick90kz.jpg", 
+                    filename : "YelpCamp/zziba7yslezzsick90kz"
+                }, 
+                {
+                     url : "https://res.cloudinary.com/uch1ha/image/upload/v1642622603/YelpCamp/mmdek5pe3pchyimdrkjb.jpg", 
+                     filename : "YelpCamp/mmdek5pe3pchyimdrkjb",
+                }
+            ]
         })
         await camp.save();
     }

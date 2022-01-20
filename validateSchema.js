@@ -4,10 +4,11 @@ module.exports.campgroundSchema=joi.object({
         campground: joi.object({
            title:joi.string().required(),
            price:joi.number().required().min(0),        //created schema for express to validate for campground
-           image:joi.string().required(),
+        //    image:joi.string().required(),
            location:joi.string().required(),
            description:joi.string().required()
-        }).required()
+        }).required(),
+        deleteImages:joi.array()
     });
 
 

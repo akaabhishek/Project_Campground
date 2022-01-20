@@ -1,3 +1,9 @@
+if(process.env.NODE_ENV !== "production"){       // process.env.NODE_ENV is an environment variable, and this line means, when we are in development mode require dotenv package which will take variables from .env file and add them to process.env in the node app so that i can access them to any of my files
+    require('dotenv').config();
+}
+console.log(process.env.CLOUDINARY_SECRET)
+console.log(process.env.CLOUDINARY_KEY)
+
 const express=require('express');
 const app=express();
 const path=require('path');
@@ -23,7 +29,9 @@ const {isLoggedIn, isAuthor, validateCampgrounds, validateReview, isReviewAuthor
 const { findById } = require('./models/review');
 const controllerCampgrounds=require('./controllers/campgrounds');
 const controllerReviews=require('./controllers/reviews')
-
+const multer=require('multer')
+const { storage } = require('./cloudinary/index.js');
+const upload=multer({storage})
 
 mongoose.connect('mongodb://localhost:27017/YelpCampDB', {
     useNewUrlParser:true, 
@@ -115,7 +123,7 @@ app.use('/campgrounds', campgroundsRoutes)
 
 app.get('/campground/:id/edit',isLoggedIn, isAuthor, catchAsync(controllerCampgrounds.editCampground))
 
-app.put('/campgrounds/:id',isLoggedIn, isAuthor, validateCampgrounds, controllerCampgrounds.updateCampground)
+app.put('/campgrounds/:id',isLoggedIn, isAuthor, upload.array('image'), validateCampgrounds, controllerCampgrounds.updateCampground)
 
 app.post('/campgrounds/:id/reviews',isLoggedIn, validateReview, catchAsync(controllerReviews.createReview))
 
