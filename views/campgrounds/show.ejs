@@ -1,8 +1,13 @@
 <% layout('/layouts/boilerPlate')%>
 <link rel="stylesheet" href="/stylesheets/starRating.css">
+<script>
+  const mapToken='<%=process.env.MAPBOX_TOKEN%>';
+</script>
+
 
 <div class="row">
     <div class="col-6">
+      <div id='map' style='width: 400px; height: 300px;'></div>
       <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
           <% campground.images.forEach((img, i)=>{%>
@@ -45,6 +50,7 @@
             </div>
           </div>
     </div>
+    
     <div class="col-6">
       <% if(currentUser) {%>
         <h3>Leave a rating :)</h3>
@@ -103,6 +109,13 @@
             <% } %>
     </div>
 </div>
+
+
+
+<script>
+    const campground=<%- JSON.stringify(campground)%> 
+</script>
+<script src="/javascripts/showPageMap.js"></script>
 
 
     <!-- <footer>

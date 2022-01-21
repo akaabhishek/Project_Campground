@@ -6,6 +6,17 @@ const Schema=mongoose.Schema;
 const campGroundSchema=new Schema({
     title:String,
     price:Number,
+    geometry:{
+        type:{
+            type:String,
+            enum:['Point'],     // LOCATION.TYPE MUST BE A POINT
+            required:true
+        },
+        coordinates:{
+            type:[Number],
+            required:true
+        }
+    },
     images:[
         {
             url:String,

@@ -33,6 +33,10 @@ const campDataDB = async()=>{
             title:`${sample(descriptors)} ${sample(places)}`,
             price:`${price}`,
             description:'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nisi quos tempore earum qui similique sequi sunt odit, dolorem, provident labore reprehenderit maiores repudiandae aut esse doloribus asperiores accusantium sit? Quia.',
+            geometry:{
+                type:"Point",
+                coordinates:[-113.1331, 47.0202]
+            },
             images:[
                 { 
                     url : "https://res.cloudinary.com/uch1ha/image/upload/v1642622590/YelpCamp/zziba7yslezzsick90kz.jpg", 
