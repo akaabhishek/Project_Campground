@@ -1,4 +1,4 @@
-<% layout('layouts/boilerPlate')%>
+<!-- <% layout('layouts/boilerPlate')%>
 <form action="/register" method="POST" class="validated-form" novalidate>
     <div>
         <label class="form-label" for="username">Username</label>
@@ -22,4 +22,48 @@
           </div>
     </div>
 <button class="btn btn-success">Register</button>
-</form>
+</form> -->
+
+
+<% layout('layouts/boilerplate')%>
+
+<div class="container d-flex justify-content-center align-items-center mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-6 offset-md-3 col-xl-4 offset-xl-4">
+            <div class="card shadow">
+                <img src="https://wallpaperaccess.com/full/2842476.jpg"
+                    alt="" class="card-img-top" />
+                <div class="card-body">
+                    <h5 class="card-title">Login</h5>
+                    <form action="/register" method="POST" class="validated-form" novalidate>
+                        <div class="mb-2">
+                            <label class="form-label" for="username">Username</label>
+                            <input class="form-control" type="text" id="username" name="username" autofocus required>
+                            <div class="valid-feedback">
+                                Looks good!
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label" for="email">Email</label>
+                            <input class="form-control" type="text" id="email" name="email" required>
+                            <div class="valid-feedback">
+                                Okay Noicee
+                              </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" for="password">Password</label>
+                            <input class="form-control" type="password" id="password" name="password" required>
+                            <div class="valid-feedback">
+                                Looks good!
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success btn-block">Login</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

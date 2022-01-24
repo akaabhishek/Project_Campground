@@ -3,6 +3,8 @@ const { campgroundSchema } = require('../validateSchema');
 const Review=require('./review')
 const Schema=mongoose.Schema;
 
+const options={toJSON:{virtuals:true}};
+
 const campGroundSchema=new Schema({
     title:String,
     price:Number,
@@ -37,6 +39,9 @@ const campGroundSchema=new Schema({
     ]
 });
 
+campGroundSchema.virtual('properties.popupMarkup').get(function (){
+    return `<a href="/campgrounds/${this._id}">${this.title}</a>`
+})
 
 campGroundSchema.post('findOneAndDelete', async function (doc){
     if(doc){

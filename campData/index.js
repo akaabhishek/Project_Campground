@@ -35,7 +35,10 @@ const campDataDB = async()=>{
             description:'Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nisi quos tempore earum qui similique sequi sunt odit, dolorem, provident labore reprehenderit maiores repudiandae aut esse doloribus asperiores accusantium sit? Quia.',
             geometry:{
                 type:"Point",
-                coordinates:[-113.1331, 47.0202]
+                coordinates:[
+                    cities[rand1000].longitude,
+                    cities[rand1000].latitude
+                ]
             },
             images:[
                 { 
