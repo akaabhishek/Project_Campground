@@ -39,7 +39,7 @@ const campGroundSchema=new Schema({
     ]
 });
 
-campGroundSchema.virtual('properties.popupMarkup').get(function (){
+campGroundSchema.virtual('properties.popupMarkup').get(function (){         // THIS ISN'T WORKING NOW FOR SOME REASON, ITS USE IS TO DISPLAY NAME OF THE CLUSTER ON THE CAMPGROUND WHEN CLICKED A CLUSTER ON THE CLUSTER MAP, AND THEN TO REDIRECT DIRECTLY TO THAT CAMPGROUND FROM CLUSTER MAP ONLY
     return `<a href="/campgrounds/${this._id}">${this.title}</a>`
 })
 
